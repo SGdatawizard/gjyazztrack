@@ -6,19 +6,22 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="The Jar">
-<meta name="theme-color" content="#EEF2EE" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151B1A" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#DA291C">
 <title>The Jar</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫙</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍒</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Archivo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
   :root {
-    --bg: #EEF2EE; --surface: #FFFFFF; --ink: #1C2625; --muted: #5E6B69; --line: #D5DDD9;
-    --a: #2E6A8A; --a-soft: #DCEAF1; --b: #9A3F64; --b-soft: #F3DEE7;
-    --coin: #C99A1E; --rope: #B7A27A; --rope-2: #98835B; --danger: #B3261E; --on-accent: #FFFFFF;
+    --red: #DA291C; --kit-black: #151515;
+    --bg: #FFFFFF; --surface: #FFFFFF; --ink: #151515; --muted: #5F5F5F; --line: #E2E2E2; --edge: #151515;
+    --a: #DA291C; --a-soft: #FFE4E0; --b: #151515; --b-soft: #EFEFEF;
+    --yellow: #FFD21F; --led: #FFC531; --board: #0E0E0E;
+    --grass-1: #3E9B4F; --grass-2: #348A44; --danger: #C0261B;
+    --display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+    --body: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     color-scheme: light;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
@@ -26,9 +29,8 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #151B1A; --surface: #1E2726; --ink: #E8EEEC; --muted: #9AA8A5; --line: #2E3A38;
-      --a: #7DB7D6; --a-soft: #1F3440; --b: #E08CAE; --b-soft: #3D2330;
-      --coin: #E2B53C; --rope: #8C7B58; --rope-2: #6E5F42; --danger: #F2857D; --on-accent: #151B1A;
+      --bg: #141414; --surface: #1F1F1F; --ink: #F2F2F2; --muted: #A8A8A8; --line: #2E2E2E; --edge: #F2F2F2;
+      --a: #FF5A4B; --a-soft: #3B1714; --b: #F2F2F2; --b-soft: #2A2A2A; --board: #000000; --danger: #FF8A80;
       color-scheme: dark;
     }
   }
@@ -36,120 +38,186 @@
   [hidden] { display: none !important; }
   html, body { margin: 0; min-height: 100%; }
   body {
-    background: var(--bg); color: var(--ink);
-    font-family: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--ink); font-family: var(--body);
     line-height: 1.45; -webkit-tap-highlight-color: transparent;
   }
-  button { font: inherit; cursor: pointer; }
-  button:focus-visible, input:focus-visible { outline: 3px solid var(--coin); outline-offset: 2px; }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
 
-  /* Login */
-  .login-inner { max-width: 360px; margin: 0 auto; padding: 12vh 24px 32px; text-align: center; }
-  .brand { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin: 0 0 8px; }
-  .lede { font-size: 1.15rem; color: var(--muted); margin: 0 0 20px; }
-  .who { display: grid; gap: 12px; }
-  .who-btn { font-size: 1.4rem; font-weight: 700; padding: 20px; border: 0; border-radius: 20px; color: var(--on-accent); }
-  .who-btn.a { background: var(--a); }
-  .who-btn.b { background: var(--b); }
-  .dots { display: flex; gap: 14px; justify-content: center; margin: 8px 0 10px; }
-  .dots span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); }
-  .dots span.on { background: var(--ink); }
+  .stripes { background: repeating-linear-gradient(90deg, var(--red) 0 34px, var(--kit-black) 34px 68px); }
+  .sticker {
+    border: 3px solid var(--edge); border-radius: 18px; box-shadow: 5px 5px 0 var(--edge);
+    transition: transform .08s, box-shadow .08s;
+  }
+  .sticker:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--edge); }
+
+  /* ---------- Login ---------- */
+  #login { min-height: 100vh; padding: 9vh 18px 32px; }
+  .login-card {
+    max-width: 360px; margin: 0 auto; padding: 28px 22px 26px; text-align: center;
+    background: var(--surface); border: 3px solid var(--kit-black); border-radius: 24px; box-shadow: 8px 8px 0 var(--kit-black);
+  }
+  .login-card .brand { font-family: var(--display); font-weight: 900; font-size: 3.4rem; line-height: .9; margin: 0; text-transform: uppercase; }
+  .edition { margin: 6px 0 22px; color: var(--muted); font-weight: 600; }
+  .lede { font-size: 1.1rem; font-weight: 700; margin: 0 0 16px; }
+  .who { display: grid; gap: 14px; }
+  .who-btn { font-family: var(--display); font-weight: 900; font-size: 1.9rem; text-transform: uppercase; padding: 14px; }
+  .who-btn.a { background: var(--a); color: #FFFFFF; }
+  .who-btn.b { background: var(--ink); color: var(--bg); }
+  .dots { display: flex; gap: 14px; justify-content: center; margin: 4px 0 10px; }
+  .dots span { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--ink); }
+  .dots span.on { background: var(--red); border-color: var(--red); }
   .dots.shake { animation: shake .35s; }
   @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
-  .error { min-height: 1.4em; color: var(--danger); font-size: .95rem; margin: 0; }
-  .keypad { display: grid; grid-template-columns: repeat(3, 76px); gap: 14px; justify-content: center; margin-top: 16px; }
-  .keypad button { height: 76px; border-radius: 50%; border: 0; background: var(--surface); color: var(--ink); font-size: 1.6rem; font-weight: 600; }
-  .keypad button:active { background: var(--line); }
-  .keypad button.text { background: none; font-size: 1rem; color: var(--muted); }
+  .error { min-height: 1.4em; color: var(--danger); font-size: .95rem; font-weight: 600; margin: 0; }
+  .keypad { display: grid; grid-template-columns: repeat(3, 70px); gap: 16px; justify-content: center; margin-top: 14px; }
+  .keypad button {
+    height: 70px; border-radius: 50%; background: var(--surface); font-family: var(--display); font-size: 2rem; font-weight: 800;
+    border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--edge);
+  }
+  .keypad button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--edge); }
+  .keypad button.text { border: 0; box-shadow: none; background: none; font-family: var(--body); font-size: 1rem; font-weight: 600; color: var(--muted); }
 
-  /* App */
-  main { max-width: 480px; margin: 0 auto; padding: 8px 18px 40px; }
-  .balance {
-    font-size: clamp(2.1rem, 10vw, 3rem); font-weight: 800; letter-spacing: -0.025em;
-    line-height: 1.02; margin: 28px 0 12px; text-wrap: balance;
+  /* ---------- App ---------- */
+  .kit { height: 150px; display: flex; align-items: flex-start; justify-content: center; padding-top: 22px; }
+  .kit .brand {
+    font-family: var(--display); font-weight: 900; font-size: 2.6rem; line-height: 1; margin: 0; color: #FFFFFF;
+    text-transform: uppercase; text-shadow: 3px 3px 0 var(--kit-black);
   }
-  .rope { position: relative; height: 56px; }
-  .cord {
-    position: absolute; left: 0; right: 0; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px;
-    background: repeating-linear-gradient(120deg, var(--rope) 0 5px, var(--rope-2) 5px 10px);
+  main { max-width: 480px; margin: 0 auto; padding: 0 18px 48px; }
+
+  .board {
+    position: relative; margin: -76px 0 22px; padding: 12px 14px 16px; text-align: center;
+    background: var(--board); color: #FFFFFF; border: 3px solid var(--edge); border-radius: 22px; box-shadow: 6px 6px 0 var(--edge);
   }
-  .mid { position: absolute; left: 50%; top: 10px; bottom: 10px; width: 2px; margin-left: -1px; background: var(--muted); opacity: .5; }
-  .coin {
-    position: absolute; top: 50%; left: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px;
-    border-radius: 50%; background: var(--coin); color: #3A2A00;
-    display: grid; place-items: center; font-weight: 800; font-size: 1.3rem;
-    box-shadow: inset 0 0 0 4px rgba(255,255,255,.25), inset 0 0 0 6px rgba(0,0,0,.1);
-    transition: left .7s cubic-bezier(.34, 1.56, .64, 1);
+  .match { font-family: var(--display); font-weight: 800; font-size: 1.05rem; color: var(--led); letter-spacing: .04em; }
+  .score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin: 8px 0 6px; }
+  .team { font-family: var(--display); font-weight: 900; font-size: 1.5rem; line-height: 1; text-transform: uppercase; overflow-wrap: anywhere; }
+  .team.a { text-align: right; }
+  .team.b { text-align: left; }
+  .team small { display: block; margin-top: 4px; font-family: var(--body); font-size: .72rem; font-weight: 600; text-transform: none; color: #9A9A9A; }
+  .digits { display: flex; gap: 8px; align-items: center; font-family: var(--display); font-weight: 900; color: var(--led); text-shadow: 0 0 14px rgba(255, 197, 49, .55); }
+  .digits b { font-size: 3.4rem; line-height: 1; min-width: 1.3ch; padding: 6px 8px 2px; background: #1C1C1C; border-radius: 10px; }
+  .digits i { font-style: normal; font-size: 2rem; opacity: .6; }
+  .digits b.bump { animation: bump .45s; }
+  @keyframes bump { 40% { transform: scale(1.25); color: #FFFFFF; } }
+  .verdict { margin: 6px 0 0; font-weight: 700; font-size: 1.1rem; text-wrap: balance; }
+
+  .pitch {
+    position: relative; height: 70px; overflow: hidden; border-radius: 16px;
+    border: 3px solid var(--edge); box-shadow: 4px 4px 0 var(--edge);
+    background: repeating-linear-gradient(90deg, var(--grass-1) 0 26px, var(--grass-2) 26px 52px);
   }
-  .ends { display: flex; justify-content: space-between; font-weight: 700; margin: 2px 0 24px; }
+  .halfway { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: rgba(255,255,255,.75); }
+  .circle { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border: 2px solid rgba(255,255,255,.75); border-radius: 50%; }
+  .goal { position: absolute; top: 50%; width: 10px; height: 30px; margin-top: -15px; border: 2px solid rgba(255,255,255,.85); }
+  .goal.left { left: -2px; border-left: 0; }
+  .goal.right { right: -2px; border-right: 0; }
+  .ball {
+    position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; padding: 0; border: 0; background: none;
+    font-size: 28px; line-height: 40px; transform: translate(-50%, -50%);
+    transition: left .8s cubic-bezier(.34, 1.4, .64, 1), transform .8s ease-out;
+  }
+  .ball.kick { animation: kick .35s; }
+  @keyframes kick { 50% { margin-top: -14px; } }
+  .ends { display: flex; justify-content: space-between; font-family: var(--display); font-weight: 800; font-size: 1.1rem; text-transform: uppercase; margin: 8px 2px 26px; }
   .ends .a { color: var(--a); }
   .ends .b { color: var(--b); }
 
-  .offences { display: grid; gap: 12px; margin-bottom: 16px; }
+  .offences { display: grid; gap: 16px; margin-bottom: 20px; }
   .offence {
-    display: grid; grid-template-columns: 1fr auto; grid-template-areas: "what count" "price count";
-    gap: 4px 16px; align-items: center; text-align: left; width: 100%;
-    border: 0; border-radius: 22px; padding: 18px 20px; color: var(--ink); transition: transform .12s;
+    display: grid; grid-template-columns: 22px 1fr auto; grid-template-areas: "card what count" "card price count";
+    gap: 2px 14px; align-items: center; text-align: left; width: 100%; padding: 16px 18px;
   }
-  .offence:active { transform: scale(.98); }
-  .offence:disabled { opacity: .6; }
+  .offence:disabled { opacity: .7; }
   .offence.a { background: var(--a-soft); }
   .offence.b { background: var(--b-soft); }
-  .offence .what { grid-area: what; font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
-  .offence .price { grid-area: price; color: var(--muted); font-size: .9rem; }
-  .offence .count { grid-area: count; text-align: center; font-size: .75rem; color: var(--muted); line-height: 1.1; }
-  .offence .count b { display: block; font-size: 2rem; font-weight: 800; }
+  .offence .card { grid-area: card; width: 18px; height: 25px; background: var(--yellow); border: 2px solid var(--kit-black); border-radius: 3px; transform: rotate(-10deg); }
+  .offence .what { grid-area: what; font-size: 1.2rem; font-weight: 800; line-height: 1.2; }
+  .offence .price { grid-area: price; color: var(--muted); font-size: .9rem; font-weight: 600; }
+  .offence .count { grid-area: count; text-align: center; font-size: .75rem; font-weight: 600; color: var(--muted); line-height: 1.1; }
+  .offence .count b { display: block; font-family: var(--display); font-size: 2.4rem; font-weight: 900; }
   .offence.a .count b { color: var(--a); }
   .offence.b .count b { color: var(--b); }
+  .offence.hit { animation: jolt .3s; }
+  @keyframes jolt { 30% { transform: rotate(-1.5deg) scale(1.02); } 60% { transform: rotate(1deg); } }
   .note { color: var(--muted); margin: 0; }
 
-  .settle {
-    width: 100%; font-weight: 700; font-size: 1rem; padding: 15px; border-radius: 999px;
-    border: 2px solid var(--ink); background: transparent; color: var(--ink);
+  .settle-up {
+    display: block; margin: 4px auto 0; padding: 10px 18px; border-radius: 999px; background: var(--surface);
+    border: 3px solid var(--edge); box-shadow: 3px 3px 0 var(--edge); font-weight: 700; font-size: .95rem;
   }
+  .settle-up:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--edge); }
 
-  .section { font-size: 1rem; font-weight: 700; margin: 32px 0 4px; }
+  .section { font-family: var(--display); font-weight: 900; font-size: 1.8rem; text-transform: uppercase; margin: 34px 0 2px; }
   .history { list-style: none; margin: 0; padding: 0; }
-  .history li {
-    display: grid; grid-template-columns: 10px 1fr auto auto; gap: 12px; align-items: center;
-    padding: 12px 0; border-bottom: 1px solid var(--line);
-  }
+  .history li { display: grid; grid-template-columns: 20px 1fr auto auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 2px dashed var(--line); }
   .history li.empty { display: block; color: var(--muted); border: 0; }
-  .history .dot { width: 10px; height: 10px; border-radius: 50%; }
-  .history .dot.a { background: var(--a); }
-  .history .dot.b { background: var(--b); }
-  .history .dot.settle { background: var(--coin); }
+  .mini-card { width: 14px; height: 19px; background: var(--yellow); border: 2px solid var(--kit-black); border-radius: 3px; transform: rotate(-8deg); }
+  .ft { font-family: var(--display); font-weight: 900; font-size: .8rem; background: var(--ink); color: var(--bg); border-radius: 4px; padding: 2px 0; text-align: center; }
   .history .text { display: block; font-weight: 600; line-height: 1.3; }
   .history .meta { display: block; color: var(--muted); font-size: .85rem; }
-  .history .amt { font-weight: 700; }
+  .history .amt { font-family: var(--display); font-weight: 900; font-size: 1.2rem; }
   .history .amt.a { color: var(--a); }
   .history .amt.b { color: var(--b); }
   .del { border: 0; background: none; color: var(--muted); font-size: 1.4rem; width: 36px; height: 36px; border-radius: 50%; }
   .del:active { background: var(--line); }
 
-  .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 28px; color: var(--muted); font-size: .9rem; flex-wrap: wrap; }
-  .link { border: 0; background: none; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; padding: 6px; margin-left: 6px; }
+  .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 30px; color: var(--muted); font-size: .9rem; flex-wrap: wrap; }
+  .link { border: 0; background: none; text-decoration: underline; text-underline-offset: 3px; padding: 6px; margin-left: 4px; }
 
   .toast {
     position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20;
     transform: translate(-50%, 200%); transition: transform .25s;
     display: flex; gap: 14px; align-items: center; width: max-content; max-width: calc(100% - 32px);
-    background: var(--ink); color: var(--bg); padding: 12px 14px 12px 18px; border-radius: 16px; font-size: .95rem;
+    background: var(--ink); color: var(--bg); padding: 12px 14px 12px 18px; border-radius: 16px; font-size: .95rem; font-weight: 600;
   }
   .toast.show { transform: translate(-50%, 0); }
-  .toast button { border: 0; background: var(--bg); color: var(--ink); font-weight: 700; border-radius: 10px; padding: 6px 12px; }
+  .toast button { border: 0; background: var(--red); color: #FFFFFF; font-weight: 800; border-radius: 10px; padding: 6px 12px; }
 
-  dialog { border: 0; border-radius: 22px; padding: 22px; background: var(--surface); color: var(--ink); width: min(340px, calc(100% - 32px)); }
-  dialog::backdrop { background: rgba(0,0,0,.45); }
-  dialog h2 { margin: 0 0 4px; font-size: 1.4rem; }
-  dialog label { display: block; font-weight: 600; margin: 14px 0; }
-  dialog input {
-    display: block; width: 100%; margin-top: 6px; font: inherit; font-size: 1.3rem; letter-spacing: .3em;
-    padding: 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--ink);
+  .pop {
+    position: fixed; z-index: 25; pointer-events: none; font-family: var(--display); font-weight: 900; font-size: 2rem;
+    color: var(--red); text-shadow: 2px 2px 0 var(--kit-black); animation: rise .9s forwards;
   }
-  .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
-  .solid { background: var(--ink); color: var(--bg); border: 0; border-radius: 999px; padding: 10px 18px; font-weight: 700; }
-  .ghost { background: none; color: var(--ink); border: 0; padding: 10px 14px; }
+  @keyframes rise {
+    from { transform: translate(-50%, -50%) scale(.6); opacity: 0; }
+    20% { transform: translate(-50%, -90%) scale(1.15); opacity: 1; }
+    to { transform: translate(-50%, -240%) scale(1); opacity: 0; }
+  }
+
+  /* Easter eggs */
+  .egg { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 24px; background: rgba(0,0,0,.6); }
+  .egg-card {
+    width: 100%; max-width: 340px; padding: 26px 22px 22px; text-align: center;
+    background: var(--surface); border: 3px solid var(--edge); border-radius: 24px; box-shadow: 8px 8px 0 var(--red);
+    animation: pop .4s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  @keyframes pop { from { transform: scale(.6) rotate(-4deg); opacity: 0; } }
+  .egg-icon { font-size: 3.6rem; line-height: 1; }
+  .egg-icon.scan { animation: scan 1s infinite; }
+  @keyframes scan { 50% { opacity: .35; transform: scale(.92); } }
+  .egg-card h2 { font-family: var(--display); font-weight: 900; font-size: 2.6rem; line-height: .95; text-transform: uppercase; margin: 12px 0 8px; }
+  .egg-card p { margin: 0 0 20px; font-weight: 600; }
+  .egg-ok { width: 100%; padding: 12px; background: var(--red); color: #FFFFFF; font-family: var(--display); font-weight: 900; font-size: 1.5rem; text-transform: uppercase; }
+  #rain { position: fixed; inset: 0; z-index: 35; pointer-events: none; overflow: hidden; }
+  #rain span { position: absolute; top: -60px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(115vh) rotate(540deg); } }
+
+  dialog {
+    width: min(340px, calc(100% - 32px)); padding: 22px; background: var(--surface); color: var(--ink);
+    border: 3px solid var(--edge); border-radius: 22px; box-shadow: 6px 6px 0 var(--edge);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.5); }
+  dialog h2 { font-family: var(--display); font-weight: 900; font-size: 2rem; text-transform: uppercase; line-height: 1; margin: 0 0 8px; }
+  dialog p { margin: 0 0 8px; }
+  dialog label { display: block; font-weight: 700; margin: 14px 0; }
+  dialog input {
+    display: block; width: 100%; margin-top: 6px; font: inherit; font-size: 1.3rem; letter-spacing: .3em; padding: 12px;
+    border-radius: 12px; border: 3px solid var(--edge); background: var(--bg); color: var(--ink);
+  }
+  .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+  .solid { background: var(--red); color: #FFFFFF; border-radius: 999px; padding: 9px 18px; font-weight: 800; border-width: 3px; box-shadow: 3px 3px 0 var(--edge); }
+  .ghost { background: none; border: 0; padding: 10px 14px; font-weight: 600; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -158,11 +226,12 @@
 </head>
 <body>
 
-<section id="login" hidden>
-  <div class="login-inner">
+<section id="login" class="stripes" hidden>
+  <div class="login-card">
     <h1 class="brand">The Jar</h1>
+    <p class="edition">🍒 Cherries edition</p>
     <div id="step-who">
-      <p class="lede">Who’s this?</p>
+      <p class="lede">Who’s playing?</p>
       <div id="who" class="who"></div>
     </div>
     <div id="step-pin" hidden>
@@ -182,27 +251,59 @@
 </section>
 
 <section id="app" hidden>
+  <header class="kit stripes"><h1 class="brand">The Jar</h1></header>
   <main>
-    <h1 id="balance" class="balance" aria-live="polite">Loading…</h1>
-    <div class="rope" aria-hidden="true">
-      <div class="cord"></div><div class="mid"></div><div id="coin" class="coin">£</div>
+    <div class="board">
+      <div class="match" id="since">Since day one</div>
+      <div class="score">
+        <span class="team a" id="team-a"></span>
+        <span class="digits"><b id="score-a">0</b><i>–</i><b id="score-b">0</b></span>
+        <span class="team b" id="team-b"></span>
+      </div>
+      <p id="balance" class="verdict" aria-live="polite">Loading…</p>
+    </div>
+
+    <div class="pitch">
+      <div class="goal left"></div><div class="halfway"></div><div class="circle"></div><div class="goal right"></div>
+      <button id="ball" class="ball" aria-label="Football">⚽</button>
     </div>
     <div class="ends"><span id="end-a" class="a"></span><span id="end-b" class="b"></span></div>
 
     <div id="offences" class="offences"></div>
-    <button id="settle" class="settle" hidden></button>
+    <button id="settle" class="settle-up" hidden></button>
 
-    <h2 class="section">Recent</h2>
+    <h2 class="section">Commentary</h2>
     <ul id="history" class="history"></ul>
 
     <footer class="foot">
       <span id="me"></span>
-      <span><button id="change-pin" class="link">Change PIN</button><button id="sign-out" class="link">Sign out</button></span>
+      <span>
+        <button id="sound" class="link"></button><button id="change-pin" class="link">Change PIN</button><button id="sign-out" class="link">Sign out</button>
+      </span>
     </footer>
   </main>
 </section>
 
 <div id="toast" class="toast" role="status"><span id="toast-msg"></span><button id="toast-undo" hidden>Undo</button></div>
+
+<div id="egg" class="egg" hidden role="dialog" aria-modal="true" aria-labelledby="egg-title">
+  <div class="egg-card">
+    <div id="egg-icon" class="egg-icon"></div>
+    <h2 id="egg-title"></h2>
+    <p id="egg-text"></p>
+    <button id="egg-ok" class="egg-ok sticker"></button>
+  </div>
+</div>
+<div id="rain" aria-hidden="true"></div>
+
+<dialog id="confirm">
+  <h2 id="confirm-title"></h2>
+  <p id="confirm-text"></p>
+  <div class="row">
+    <button id="confirm-cancel" class="ghost">Cancel</button>
+    <button id="confirm-ok" class="solid sticker"></button>
+  </div>
+</dialog>
 
 <dialog id="pin-dialog">
   <h2>Change your PIN</h2>
@@ -215,7 +316,7 @@
   <p class="error" id="pin-change-error" role="status"></p>
   <div class="row">
     <button id="pin-cancel" class="ghost">Cancel</button>
-    <button id="pin-save" class="solid">Save PIN</button>
+    <button id="pin-save" class="solid sticker">Save PIN</button>
   </div>
 </dialog>
 
@@ -224,8 +325,8 @@
 const SUPABASE_URL = 'https://tfsuyfobfsqnslziacgh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_pS4e_2AXEDMh-JDKK2Qnag_3GriNZJo';
 const PEOPLE = [
-  { name: 'George',  email: 'gjames@stanleygibbons.com' },
-  { name: 'Yazz', email: 'yazz@familyjames.com' },
+  { name: 'George', email: 'gjames@stanleygibbons.com' },
+  { name: 'Yazz',   email: 'yazz@familyjames.com' },
 ];
 /* ============================== */
 
@@ -233,9 +334,10 @@ const PIN_LENGTH = 6;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = (s) => document.querySelector(s);
 const byName = (x, y) => x.name.localeCompare(y.name);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const state = { user: null, totals: [], offences: [], events: [], balance: null };
-let channel = null, refreshTimer = null, toastTimer = null;
+const state = { user: null, totals: [], offences: [], events: [], balance: null, names: {}, settles: 0 };
+let channel = null, refreshTimer = null, toastTimer = null, partnerLogged = false;
 let pinPerson = null, pinDigits = '', busy = false;
 
 const round2 = (n) => Math.round(Number(n) * 100) / 100;
@@ -247,6 +349,27 @@ function when(iso) {
   const t = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(/\s/g, '').toLowerCase();
   if (d.toDateString() === new Date().toDateString()) return `Today, ${t}`;
   return `${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}, ${t}`;
+}
+
+const LINES = [
+  (n, l) => `${n} ${l}. Again.`,
+  (n, l) => `Oh dear. ${n} ${l}.`,
+  (n, l) => `The away end groans as ${n} ${l}.`,
+  (n, l) => `${n} ${l}. That’s going in the book.`,
+  (n, l) => `Unbelievable scenes. ${n} ${l}.`,
+  (n, l) => `${n} ${l}. The gaffer can’t bear to look.`,
+  (n, l) => `No need for VAR on this one: ${n} ${l}.`,
+  (n, l) => `${n} ${l}, and the crowd is not happy.`,
+];
+
+function commentary(ev) {
+  const who = state.names[ev.person_id] || 'Someone';
+  if (ev.kind === 'settle') {
+    const otherId = Object.keys(state.names).find((id) => id !== ev.person_id);
+    return `Settled up. ${who} paid ${state.names[otherId] || 'up'} ${money(ev.amount)}.`;
+  }
+  const off = state.offences.find((o) => o.id === ev.offence_id);
+  return LINES[Number(ev.id) % LINES.length](who, off ? off.label : 'got fined');
 }
 
 function show(id) {
@@ -264,10 +387,145 @@ function toast(msg, undoId) {
   toastTimer = setTimeout(() => $('#toast').classList.remove('show'), undoId ? 5000 : 3500);
 }
 
+function ask(title, text, okLabel) {
+  return new Promise((resolve) => {
+    const d = $('#confirm');
+    $('#confirm-title').textContent = title;
+    $('#confirm-text').textContent = text;
+    $('#confirm-ok').textContent = okLabel;
+    d.returnValue = '';
+    d.addEventListener('close', () => resolve(d.returnValue === 'ok'), { once: true });
+    d.showModal();
+  });
+}
+$('#confirm-ok').addEventListener('click', () => $('#confirm').close('ok'));
+$('#confirm-cancel').addEventListener('click', () => $('#confirm').close(''));
+
+/* ---------- Sound ---------- */
+let soundOn = true, actx = null;
+try { soundOn = localStorage.getItem('jar-sound') !== 'off'; } catch (e) {}
+function drawSound() { $('#sound').textContent = `Sound: ${soundOn ? 'on' : 'off'}`; }
+$('#sound').addEventListener('click', () => {
+  soundOn = !soundOn;
+  try { localStorage.setItem('jar-sound', soundOn ? 'on' : 'off'); } catch (e) {}
+  drawSound();
+});
+
+function whistle(long) {
+  if (!soundOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain(), lfo = actx.createOscillator(), lg = actx.createGain();
+    o.type = 'sine'; o.frequency.value = 2900;
+    lfo.frequency.value = 28; lg.gain.value = 140;
+    lfo.connect(lg).connect(o.frequency);
+    const t = actx.currentTime;
+    const blasts = long ? [[0, .22], [.32, .22], [.64, .9]] : [[0, .35]];
+    g.gain.setValueAtTime(0, t);
+    blasts.forEach(([s, d]) => {
+      g.gain.setValueAtTime(0, t + s);
+      g.gain.linearRampToValueAtTime(.12, t + s + .02);
+      g.gain.setValueAtTime(.12, t + s + d - .03);
+      g.gain.linearRampToValueAtTime(0, t + s + d);
+    });
+    o.connect(g).connect(actx.destination);
+    const end = t + (long ? 1.6 : .4);
+    o.start(t); lfo.start(t); o.stop(end); lfo.stop(end);
+  } catch (e) {}
+}
+
+/* ---------- Fun bits ---------- */
+function rain(emojis, n = 30) {
+  if (reduced) return;
+  const layer = $('#rain');
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('span');
+    s.textContent = emojis[i % emojis.length];
+    s.style.left = `${Math.random() * 100}%`;
+    s.style.fontSize = `${22 + Math.random() * 24}px`;
+    s.style.animationDuration = `${1.8 + Math.random() * 1.8}s`;
+    s.style.animationDelay = `${Math.random() * .7}s`;
+    s.addEventListener('animationend', () => s.remove());
+    layer.append(s);
+  }
+}
+
+function popAt(x, y, text) {
+  if (reduced) return;
+  const p = document.createElement('span');
+  p.className = 'pop';
+  p.textContent = text;
+  p.style.left = `${x}px`;
+  p.style.top = `${y}px`;
+  p.addEventListener('animationend', () => p.remove());
+  document.body.append(p);
+}
+
+const eggQueue = [];
+let eggShowing = false;
+
+function celebrate(egg) {
+  eggQueue.push(egg);
+  if (!eggShowing) nextEgg();
+}
+
+function nextEgg() {
+  const egg = eggQueue.shift();
+  if (!egg) { eggShowing = false; $('#egg').hidden = true; return; }
+  eggShowing = true;
+  const icon = $('#egg-icon'), title = $('#egg-title'), text = $('#egg-text'), ok = $('#egg-ok');
+  icon.textContent = egg.icon;
+  title.textContent = egg.title;
+  text.textContent = egg.text;
+  ok.textContent = egg.ok || 'Get in';
+  $('#egg').hidden = false;
+  if (egg.sound) whistle(egg.sound === 'long');
+  if (egg.rain) rain(egg.rain, egg.count);
+  if (egg.var) {
+    ok.hidden = true;
+    icon.classList.add('scan');
+    setTimeout(() => {
+      icon.classList.remove('scan');
+      icon.textContent = '✅';
+      title.textContent = 'Decision stands';
+      text.textContent = egg.after;
+      ok.hidden = false;
+      ok.focus();
+    }, 2200);
+  } else {
+    ok.hidden = false;
+    ok.focus();
+  }
+}
+$('#egg-ok').addEventListener('click', nextEgg);
+
+const EGGS = {
+  kickoff: () => ({ icon: '⚽', title: 'Kick-off!', text: 'The first fine is in the jar. Let the games begin.', rain: ['🍒', '⚽', '🎉'], sound: 'short', ok: 'Let’s go' }),
+  hattrick: (n) => ({ icon: '⚽⚽⚽', title: 'Hat-trick!', text: `That’s three for ${n}. Someone fetch the match ball.`, rain: ['⚽'], count: 24 }),
+  double: (n) => ({ icon: '🎟️', title: 'Double figures', text: `Ten for ${n}. Officially a season ticket holder now.`, rain: ['🎟️', '🍒'] }),
+  fifty: (n) => ({ icon: '🏆', title: 'Half century', text: `Fifty for ${n}. Testimonial match incoming.`, rain: ['🏆', '🍒'], count: 40 }),
+  var: () => ({ icon: '📺', title: 'Checking VAR…', text: 'Twice in a minute? Let’s look at the replay.', var: true, after: 'We’ve checked every angle. It still counts.', ok: 'Fair enough' }),
+  comeback: (debtor, creditor) => ({ icon: '🔄', title: 'What a comeback!', text: `The tables have turned. ${debtor} now owes ${creditor}.`, rain: ['🍒', '🔥'] }),
+  late: () => ({ icon: '🌙', title: 'Late kick-off', text: 'Logged after 11pm. Even the floodlights are tired.', ok: 'Night night' }),
+  centurion: () => ({ icon: '💯', title: 'Centurion', text: 'That’s the 100th fine in the jar. Frame this one.', rain: ['💯', '🍒', '🎉'], count: 40 }),
+  paid: (debtor, creditor, amt) => ({ icon: '💷', title: 'Paid up!', text: `${debtor} paid ${creditor} ${money(amt)}. Back to all square.`, rain: ['🍒', '💷'], sound: 'long' }),
+  record: (amt) => ({ icon: '💸', title: 'Record transfer', text: `${money(amt)} is the biggest settle-up yet. Sky Sports News is on its way.`, rain: ['💸', '💷'] }),
+  secret: () => ({ icon: '🍒', title: 'Up the Cherries!', text: 'You found the secret. Red army, red army.', rain: ['🍒'], count: 60, ok: 'Come on you reds' }),
+};
+
+let ballTaps = [];
+$('#ball').addEventListener('click', () => {
+  const ball = $('#ball');
+  ball.classList.remove('kick'); void ball.offsetWidth; ball.classList.add('kick');
+  const now = Date.now();
+  ballTaps = ballTaps.filter((t) => now - t < 2500).concat(now);
+  if (ballTaps.length >= 5) { ballTaps = []; celebrate(EGGS.secret()); }
+});
+
 /* ---------- Login ---------- */
 function renderWho() {
   $('#who').innerHTML = [...PEOPLE].sort(byName)
-    .map((p, i) => `<button class="who-btn ${i ? 'b' : 'a'}" data-email="${esc(p.email)}">${esc(p.name)}</button>`)
+    .map((p, i) => `<button class="who-btn sticker ${i ? 'b' : 'a'}" data-email="${esc(p.email)}">${esc(p.name)}</button>`)
     .join('');
 }
 
@@ -352,7 +610,10 @@ sb.auth.onAuthStateChange((_event, session) => {
 function subscribe() {
   if (channel) return;
   channel = sb.channel('jar')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, refreshSoon)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, (payload) => {
+      if (payload.eventType === 'INSERT' && payload.new && state.user && payload.new.logged_by !== state.user.id) partnerLogged = true;
+      refreshSoon();
+    })
     .subscribe();
 }
 
@@ -372,17 +633,40 @@ document.addEventListener('visibilitychange', () => {
 /* ---------- Data ---------- */
 async function refresh() {
   if (!state.user) return;
-  const [p, o, e] = await Promise.all([
+  const [p, o, e, s] = await Promise.all([
     sb.from('person_totals').select('*'),
     sb.from('offences_live').select('*').order('sort'),
     sb.from('events').select('*').order('created_at', { ascending: false }).limit(40),
+    sb.from('events').select('id', { count: 'exact', head: true }).eq('kind', 'settle'),
   ]);
-  const err = p.error || o.error || e.error;
+  const err = p.error || o.error || e.error || s.error;
   if (err) return toast(`Couldn’t load the jar: ${err.message}`);
   state.totals = p.data.sort(byName);
   state.offences = o.data;
   state.events = e.data;
+  state.settles = s.count || 0;
   render();
+
+  if (partnerLogged) {
+    partnerLogged = false;
+    const ev = state.events[0];
+    if (ev && ev.logged_by !== state.user.id) toast(`${state.names[ev.logged_by] || 'Someone'} logged: ${commentary(ev)}`);
+  }
+}
+
+function roundTotals() {
+  const t = {};
+  state.totals.forEach((p) => { t[p.id] = 0; });
+  state.offences.forEach((o) => { t[o.offender_id] = (t[o.offender_id] || 0) + Number(o.round_count); });
+  return t;
+}
+
+function setDigit(sel, v) {
+  const el = $(sel);
+  if (el.textContent === String(v)) return;
+  el.textContent = v;
+  if (reduced) return;
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
 }
 
 function render() {
@@ -398,13 +682,21 @@ function render() {
   }
 
   const [A, B] = T;
-  const names = { [A.id]: A.name, [B.id]: B.name };
+  state.names = { [A.id]: A.name, [B.id]: B.name };
   const side = (id) => (id === A.id ? 'a' : 'b');
   const net = round2(Number(A.owes) - Number(B.owes)); // > 0 means A owes B
   const amt = Math.abs(net);
   const debtor = net > 0 ? A : B;
   const creditor = net > 0 ? B : A;
   state.balance = amt ? { debtor, creditor, amt } : null;
+
+  // Scoreboard
+  const rt = roundTotals();
+  $('#since').textContent = state.settles ? 'Since the last settle-up' : 'Since day one';
+  $('#team-a').innerHTML = esc(A.name) + (A.id === me ? '<small>you</small>' : '');
+  $('#team-b').innerHTML = esc(B.name) + (B.id === me ? '<small>you</small>' : '');
+  setDigit('#score-a', rt[A.id] || 0);
+  setDigit('#score-b', rt[B.id] || 0);
 
   let line;
   if (!amt) line = 'All square';
@@ -413,48 +705,45 @@ function render() {
   else line = `${debtor.name} owes ${creditor.name} ${money(amt)}`;
   $('#balance').textContent = line;
 
-  // Coin gets pulled towards whoever is owed
-  const pull = amt ? Math.sign(net) * 42 * (amt / (amt + 3)) : 0;
-  $('#coin').style.left = `${50 + pull}%`;
-  $('#end-a').textContent = A.name + (A.id === me ? ' (you)' : '');
-  $('#end-b').textContent = B.name + (B.id === me ? ' (you)' : '');
-  $('#me').textContent = `Signed in as ${names[me] || ''}`;
+  // Ball rolls into the half of whoever owes
+  const pos = 50 - Math.sign(net) * 40 * (amt / (amt + 3));
+  const ball = $('#ball');
+  ball.style.left = `${pos}%`;
+  ball.style.transform = `translate(-50%, -50%) rotate(${(pos - 50) * 14}deg)`;
+  $('#end-a').textContent = A.name;
+  $('#end-b').textContent = B.name;
+  $('#me').textContent = `Signed in as ${state.names[me] || ''}`;
 
+  // Offence buttons
   const active = state.offences.filter((o) => o.active);
   $('#offences').innerHTML = active.length
     ? active.map((o) => `
-        <button class="offence ${side(o.offender_id)}" data-id="${o.id}">
-          <span class="what">${esc(names[o.offender_id] || '')} ${esc(o.label)}</span>
+        <button class="offence sticker ${side(o.offender_id)}" data-id="${o.id}">
+          <span class="card"></span>
+          <span class="what">${esc(state.names[o.offender_id] || '')} ${esc(o.label)}</span>
           <span class="price">${money(o.amount)} each</span>
-          <span class="count"><b>${o.round_count}</b>this round</span>
+          <span class="count"><b>${o.round_count}</b>so far</span>
         </button>`).join('')
     : '<p class="note">No offences set up yet. Add one in the offences table in Supabase.</p>';
 
+  // Settle-up button (optional, kept low-key)
   const settle = $('#settle');
   settle.hidden = !amt;
-  if (amt) settle.textContent = `Settle up: ${debtor.name} pays ${money(amt)}`;
+  if (amt) settle.textContent = `Settle up: ${debtor.name} pays ${creditor.name} ${money(amt)}`;
 
+  // Commentary
   $('#history').innerHTML = state.events.length
     ? state.events.map((ev) => {
-        const who = names[ev.person_id] || 'Someone';
-        const by = ev.logged_by === me ? 'you' : (names[ev.logged_by] || 'someone');
-        let text, dot, amtHtml = '<span></span>';
-        if (ev.kind === 'offence') {
-          const off = state.offences.find((o) => o.id === ev.offence_id);
-          text = `${who} ${off ? off.label : 'got fined'}`;
-          dot = side(ev.person_id);
-          amtHtml = `<span class="amt ${dot}">+${money(ev.amount)}</span>`;
-        } else {
-          const other = ev.person_id === A.id ? B.name : A.name;
-          text = `${who} paid ${other} ${money(ev.amount)}`;
-          dot = 'settle';
-        }
+        const by = ev.logged_by === me ? 'you' : (state.names[ev.logged_by] || 'someone');
+        const isOff = ev.kind === 'offence';
+        const marker = isOff ? '<span class="mini-card"></span>' : '<span class="ft">FT</span>';
+        const amtHtml = isOff ? `<span class="amt ${side(ev.person_id)}">+${money(ev.amount)}</span>` : '<span></span>';
         const del = ev.logged_by === me
           ? `<button class="del" data-id="${ev.id}" aria-label="Delete this entry">×</button>`
           : '<span></span>';
-        return `<li><span class="dot ${dot}"></span><span><span class="text">${esc(text)}</span><span class="meta">${esc(when(ev.created_at))}, logged by ${esc(by)}</span></span>${amtHtml}${del}</li>`;
+        return `<li>${marker}<span><span class="text">${esc(commentary(ev))}</span><span class="meta">${esc(when(ev.created_at))}, logged by ${esc(by)}</span></span>${amtHtml}${del}</li>`;
       }).join('')
-    : '<li class="empty">Nothing logged yet. Tap a button above when someone slips up.</li>';
+    : '<li class="empty">🍒 Nothing logged yet. Tap a button above when someone slips up.</li>';
 }
 
 /* ---------- Actions ---------- */
@@ -462,15 +751,43 @@ $('#offences').addEventListener('click', async (e) => {
   const btn = e.target.closest('.offence');
   if (!btn) return;
   const id = Number(btn.dataset.id);
+  const off = state.offences.find((o) => o.id === id);
+  if (!off) return;
+
+  const before = {
+    balance: state.balance,
+    sameRecently: state.events.some((ev) => ev.kind === 'offence' && ev.offence_id === id && Date.now() - new Date(ev.created_at).getTime() < 60000),
+  };
+
   btn.disabled = true;
   if (navigator.vibrate) navigator.vibrate(15);
+  btn.classList.remove('hit'); void btn.offsetWidth; btn.classList.add('hit');
+  popAt(e.clientX || btn.getBoundingClientRect().right - 40, e.clientY || btn.getBoundingClientRect().top + 20, `+${money(off.amount)}`);
+
   const { data, error } = await sb.from('events').insert({ kind: 'offence', offence_id: id }).select().single();
   btn.disabled = false;
   if (error) return toast(`Couldn’t log that: ${error.message}`);
-  const off = state.offences.find((o) => o.id === id);
-  const who = (state.totals.find((t) => t.id === off?.offender_id) || {}).name || '';
-  toast(`Logged: ${who} ${off ? off.label : ''}`, data.id);
-  refresh();
+
+  const who = state.names[off.offender_id] || '';
+  toast(`In the book: ${who} ${off.label}`, data.id);
+  await refresh();
+
+  // Easter eggs (all-time counts, so settling up doesn't reset them)
+  const [all, mine] = await Promise.all([
+    sb.from('events').select('id', { count: 'exact', head: true }).eq('kind', 'offence'),
+    sb.from('events').select('id', { count: 'exact', head: true }).eq('kind', 'offence').eq('person_id', off.offender_id),
+  ]);
+  const hour = new Date().getHours();
+  if (before.sameRecently) celebrate(EGGS.var());
+  if (all.count === 1) celebrate(EGGS.kickoff());
+  if (all.count === 100) celebrate(EGGS.centurion());
+  if (mine.count === 3) celebrate(EGGS.hattrick(who));
+  if (mine.count === 10) celebrate(EGGS.double(who));
+  if (mine.count === 50) celebrate(EGGS.fifty(who));
+  if (before.balance && state.balance && before.balance.debtor.id !== state.balance.debtor.id) {
+    celebrate(EGGS.comeback(state.balance.debtor.name, state.balance.creditor.name));
+  }
+  if (hour >= 23 || hour < 4) celebrate(EGGS.late());
 });
 
 $('#toast-undo').addEventListener('click', async () => {
@@ -484,7 +801,8 @@ $('#toast-undo').addEventListener('click', async () => {
 
 $('#history').addEventListener('click', async (e) => {
   const btn = e.target.closest('.del');
-  if (!btn || !confirm('Delete this entry?')) return;
+  if (!btn) return;
+  if (!(await ask('Delete this?', 'It comes off the scoreboard too.', 'Delete'))) return;
   const { error } = await sb.from('events').delete().eq('id', btn.dataset.id);
   if (error) return toast(`Couldn’t delete: ${error.message}`);
   toast('Entry deleted');
@@ -494,10 +812,16 @@ $('#history').addEventListener('click', async (e) => {
 $('#settle').addEventListener('click', async () => {
   const b = state.balance;
   if (!b) return;
-  if (!confirm(`Confirm ${b.debtor.name} has paid ${b.creditor.name} ${money(b.amt)}? The balance goes back to zero.`)) return;
+  if (!(await ask('Settle up?', `Confirm ${b.debtor.name} has paid ${b.creditor.name} ${money(b.amt)}. The balance goes back to zero.`, 'Settle up'))) return;
+
+  const prev = await sb.from('events').select('amount').eq('kind', 'settle').order('amount', { ascending: false }).limit(1);
+  const prevMax = prev.data && prev.data.length ? Number(prev.data[0].amount) : null;
+
   const { error } = await sb.from('events').insert({ kind: 'settle', person_id: b.debtor.id, amount: b.amt });
   if (error) return toast(`Couldn’t settle up: ${error.message}`);
-  toast('Settled. All square.');
+
+  celebrate(EGGS.paid(b.debtor.name, b.creditor.name, b.amt));
+  if (prevMax !== null && b.amt > prevMax) celebrate(EGGS.record(b.amt));
   refresh();
 });
 
@@ -528,6 +852,7 @@ $('#pin-save').addEventListener('click', async () => {
 
 renderWho();
 drawDots();
+drawSound();
 </script>
 </body>
 </html>
