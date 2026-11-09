@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="The Jar">
+<meta name="theme-color" content="#EEF2EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151B1A" media="(prefers-color-scheme: dark)">
+<title>The Jar</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫙</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+  :root {
+    --bg: #EEF2EE; --surface: #FFFFFF; --ink: #1C2625; --muted: #5E6B69; --line: #D5DDD9;
+    --a: #2E6A8A; --a-soft: #DCEAF1; --b: #9A3F64; --b-soft: #F3DEE7;
+    --coin: #C99A1E; --rope: #B7A27A; --rope-2: #98835B; --danger: #B3261E; --on-accent: #FFFFFF;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151B1A; --surface: #1E2726; --ink: #E8EEEC; --muted: #9AA8A5; --line: #2E3A38;
+      --a: #7DB7D6; --a-soft: #1F3440; --b: #E08CAE; --b-soft: #3D2330;
+      --coin: #E2B53C; --rope: #8C7B58; --rope-2: #6E5F42; --danger: #F2857D; --on-accent: #151B1A;
+      color-scheme: dark;
+    }
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.45; -webkit-tap-highlight-color: transparent;
+  }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--coin); outline-offset: 2px; }
+
+  /* Login */
+  .login-inner { max-width: 360px; margin: 0 auto; padding: 12vh 24px 32px; text-align: center; }
+  .brand { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin: 0 0 8px; }
+  .lede { font-size: 1.15rem; color: var(--muted); margin: 0 0 20px; }
+  .who { display: grid; gap: 12px; }
+  .who-btn { font-size: 1.4rem; font-weight: 700; padding: 20px; border: 0; border-radius: 20px; color: var(--on-accent); }
+  .who-btn.a { background: var(--a); }
+  .who-btn.b { background: var(--b); }
+  .dots { display: flex; gap: 14px; justify-content: center; margin: 8px 0 10px; }
+  .dots span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); }
+  .dots span.on { background: var(--ink); }
+  .dots.shake { animation: shake .35s; }
+  @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  .error { min-height: 1.4em; color: var(--danger); font-size: .95rem; margin: 0; }
+  .keypad { display: grid; grid-template-columns: repeat(3, 76px); gap: 14px; justify-content: center; margin-top: 16px; }
+  .keypad button { height: 76px; border-radius: 50%; border: 0; background: var(--surface); color: var(--ink); font-size: 1.6rem; font-weight: 600; }
+  .keypad button:active { background: var(--line); }
+  .keypad button.text { background: none; font-size: 1rem; color: var(--muted); }
+
+  /* App */
+  main { max-width: 480px; margin: 0 auto; padding: 8px 18px 40px; }
+  .balance {
+    font-size: clamp(2.1rem, 10vw, 3rem); font-weight: 800; letter-spacing: -0.025em;
+    line-height: 1.02; margin: 28px 0 12px; text-wrap: balance;
+  }
+  .rope { position: relative; height: 56px; }
+  .cord {
+    position: absolute; left: 0; right: 0; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px;
+    background: repeating-linear-gradient(120deg, var(--rope) 0 5px, var(--rope-2) 5px 10px);
+  }
+  .mid { position: absolute; left: 50%; top: 10px; bottom: 10px; width: 2px; margin-left: -1px; background: var(--muted); opacity: .5; }
+  .coin {
+    position: absolute; top: 50%; left: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px;
+    border-radius: 50%; background: var(--coin); color: #3A2A00;
+    display: grid; place-items: center; font-weight: 800; font-size: 1.3rem;
+    box-shadow: inset 0 0 0 4px rgba(255,255,255,.25), inset 0 0 0 6px rgba(0,0,0,.1);
+    transition: left .7s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .ends { display: flex; justify-content: space-between; font-weight: 700; margin: 2px 0 24px; }
+  .ends .a { color: var(--a); }
+  .ends .b { color: var(--b); }
+
+  .offences { display: grid; gap: 12px; margin-bottom: 16px; }
+  .offence {
+    display: grid; grid-template-columns: 1fr auto; grid-template-areas: "what count" "price count";
+    gap: 4px 16px; align-items: center; text-align: left; width: 100%;
+    border: 0; border-radius: 22px; padding: 18px 20px; color: var(--ink); transition: transform .12s;
+  }
+  .offence:active { transform: scale(.98); }
+  .offence:disabled { opacity: .6; }
+  .offence.a { background: var(--a-soft); }
+  .offence.b { background: var(--b-soft); }
+  .offence .what { grid-area: what; font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+  .offence .price { grid-area: price; color: var(--muted); font-size: .9rem; }
+  .offence .count { grid-area: count; text-align: center; font-size: .75rem; color: var(--muted); line-height: 1.1; }
+  .offence .count b { display: block; font-size: 2rem; font-weight: 800; }
+  .offence.a .count b { color: var(--a); }
+  .offence.b .count b { color: var(--b); }
+  .note { color: var(--muted); margin: 0; }
+
+  .settle {
+    width: 100%; font-weight: 700; font-size: 1rem; padding: 15px; border-radius: 999px;
+    border: 2px solid var(--ink); background: transparent; color: var(--ink);
+  }
+
+  .section { font-size: 1rem; font-weight: 700; margin: 32px 0 4px; }
+  .history { list-style: none; margin: 0; padding: 0; }
+  .history li {
+    display: grid; grid-template-columns: 10px 1fr auto auto; gap: 12px; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .history li.empty { display: block; color: var(--muted); border: 0; }
+  .history .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .history .dot.a { background: var(--a); }
+  .history .dot.b { background: var(--b); }
+  .history .dot.settle { background: var(--coin); }
+  .history .text { display: block; font-weight: 600; line-height: 1.3; }
+  .history .meta { display: block; color: var(--muted); font-size: .85rem; }
+  .history .amt { font-weight: 700; }
+  .history .amt.a { color: var(--a); }
+  .history .amt.b { color: var(--b); }
+  .del { border: 0; background: none; color: var(--muted); font-size: 1.4rem; width: 36px; height: 36px; border-radius: 50%; }
+  .del:active { background: var(--line); }
+
+  .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 28px; color: var(--muted); font-size: .9rem; flex-wrap: wrap; }
+  .link { border: 0; background: none; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; padding: 6px; margin-left: 6px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+    transform: translate(-50%, 200%); transition: transform .25s;
+    display: flex; gap: 14px; align-items: center; width: max-content; max-width: calc(100% - 32px);
+    background: var(--ink); color: var(--bg); padding: 12px 14px 12px 18px; border-radius: 16px; font-size: .95rem;
+  }
+  .toast.show { transform: translate(-50%, 0); }
+  .toast button { border: 0; background: var(--bg); color: var(--ink); font-weight: 700; border-radius: 10px; padding: 6px 12px; }
+
+  dialog { border: 0; border-radius: 22px; padding: 22px; background: var(--surface); color: var(--ink); width: min(340px, calc(100% - 32px)); }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  dialog h2 { margin: 0 0 4px; font-size: 1.4rem; }
+  dialog label { display: block; font-weight: 600; margin: 14px 0; }
+  dialog input {
+    display: block; width: 100%; margin-top: 6px; font: inherit; font-size: 1.3rem; letter-spacing: .3em;
+    padding: 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--ink);
+  }
+  .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+  .solid { background: var(--ink); color: var(--bg); border: 0; border-radius: 999px; padding: 10px 18px; font-weight: 700; }
+  .ghost { background: none; color: var(--ink); border: 0; padding: 10px 14px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<section id="login" hidden>
+  <div class="login-inner">
+    <h1 class="brand">The Jar</h1>
+    <div id="step-who">
+      <p class="lede">Who’s this?</p>
+      <div id="who" class="who"></div>
+    </div>
+    <div id="step-pin" hidden>
+      <p class="lede" id="pin-hello"></p>
+      <div id="dots" class="dots" aria-hidden="true"></div>
+      <p class="error" id="pin-error" role="status"></p>
+      <div id="keypad" class="keypad">
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+        <button data-k="cancel" class="text">Back</button>
+        <button data-k="0">0</button>
+        <button data-k="back" class="text" aria-label="Delete last digit">⌫</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="app" hidden>
+  <main>
+    <h1 id="balance" class="balance" aria-live="polite">Loading…</h1>
+    <div class="rope" aria-hidden="true">
+      <div class="cord"></div><div class="mid"></div><div id="coin" class="coin">£</div>
+    </div>
+    <div class="ends"><span id="end-a" class="a"></span><span id="end-b" class="b"></span></div>
+
+    <div id="offences" class="offences"></div>
+    <button id="settle" class="settle" hidden></button>
+
+    <h2 class="section">Recent</h2>
+    <ul id="history" class="history"></ul>
+
+    <footer class="foot">
+      <span id="me"></span>
+      <span><button id="change-pin" class="link">Change PIN</button><button id="sign-out" class="link">Sign out</button></span>
+    </footer>
+  </main>
+</section>
+
+<div id="toast" class="toast" role="status"><span id="toast-msg"></span><button id="toast-undo" hidden>Undo</button></div>
+
+<dialog id="pin-dialog">
+  <h2>Change your PIN</h2>
+  <label>New PIN
+    <input id="new-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6">
+  </label>
+  <label>Type it again
+    <input id="new-pin-2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6">
+  </label>
+  <p class="error" id="pin-change-error" role="status"></p>
+  <div class="row">
+    <button id="pin-cancel" class="ghost">Cancel</button>
+    <button id="pin-save" class="solid">Save PIN</button>
+  </div>
+</dialog>
+
+<script>
+/* ===== CONFIG: edit these ===== */
+const SUPABASE_URL = 'https://tfsuyfobfsqnslziacgh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_pS4e_2AXEDMh-JDKK2Qnag_3GriNZJo';
+const PEOPLE = [
+  { name: 'George',  email: 'gjames@stanleygibbons.com' },
+  { name: 'Yazz', email: 'yazz@familyjames.com' },
+];
+/* ============================== */
+
+const PIN_LENGTH = 6;
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = (s) => document.querySelector(s);
+const byName = (x, y) => x.name.localeCompare(y.name);
+
+const state = { user: null, totals: [], offences: [], events: [], balance: null };
+let channel = null, refreshTimer = null, toastTimer = null;
+let pinPerson = null, pinDigits = '', busy = false;
+
+const round2 = (n) => Math.round(Number(n) * 100) / 100;
+const money = (n) => { const v = round2(n); return '£' + (Number.isInteger(v) ? v : v.toFixed(2)); };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function when(iso) {
+  const d = new Date(iso);
+  const t = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(/\s/g, '').toLowerCase();
+  if (d.toDateString() === new Date().toDateString()) return `Today, ${t}`;
+  return `${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}, ${t}`;
+}
+
+function show(id) {
+  $('#login').hidden = id !== 'login';
+  $('#app').hidden = id !== 'app';
+}
+
+function toast(msg, undoId) {
+  $('#toast-msg').textContent = msg;
+  const u = $('#toast-undo');
+  u.hidden = !undoId;
+  u.dataset.id = undoId || '';
+  $('#toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('#toast').classList.remove('show'), undoId ? 5000 : 3500);
+}
+
+/* ---------- Login ---------- */
+function renderWho() {
+  $('#who').innerHTML = [...PEOPLE].sort(byName)
+    .map((p, i) => `<button class="who-btn ${i ? 'b' : 'a'}" data-email="${esc(p.email)}">${esc(p.name)}</button>`)
+    .join('');
+}
+
+function resetLogin() {
+  pinPerson = null; pinDigits = ''; busy = false;
+  $('#step-who').hidden = false;
+  $('#step-pin').hidden = true;
+  $('#pin-error').textContent = '';
+}
+
+function drawDots() {
+  $('#dots').innerHTML = Array.from({ length: PIN_LENGTH }, (_, i) => `<span class="${i < pinDigits.length ? 'on' : ''}"></span>`).join('');
+}
+
+function press(k) {
+  if (busy) return;
+  if (k === 'cancel') return resetLogin();
+  if (k === 'back') pinDigits = pinDigits.slice(0, -1);
+  else if (pinDigits.length < PIN_LENGTH) pinDigits += k;
+  drawDots();
+  if (pinDigits.length === PIN_LENGTH) tryLogin();
+}
+
+async function tryLogin() {
+  busy = true;
+  $('#pin-error').textContent = 'Checking…';
+  const { error } = await sb.auth.signInWithPassword({ email: pinPerson.email, password: pinDigits });
+  busy = false;
+  if (error) {
+    pinDigits = '';
+    drawDots();
+    $('#pin-error').textContent = 'Wrong PIN. Try again.';
+    const dots = $('#dots');
+    dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake');
+  }
+}
+
+$('#who').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  pinPerson = PEOPLE.find((p) => p.email === b.dataset.email);
+  pinDigits = '';
+  $('#pin-hello').textContent = `Hi ${pinPerson.name}. Enter your PIN.`;
+  $('#pin-error').textContent = '';
+  drawDots();
+  $('#step-who').hidden = true;
+  $('#step-pin').hidden = false;
+});
+
+$('#keypad').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (b) press(b.dataset.k);
+});
+
+document.addEventListener('keydown', (e) => {
+  if ($('#login').hidden || $('#step-pin').hidden) return;
+  if (/^\d$/.test(e.key)) press(e.key);
+  else if (e.key === 'Backspace') press('back');
+  else if (e.key === 'Escape') press('cancel');
+});
+
+/* ---------- Session ---------- */
+async function startApp(user) {
+  if (state.user && state.user.id === user.id) return;
+  state.user = user;
+  show('app');
+  await refresh();
+  subscribe();
+}
+
+function showLogin() {
+  state.user = null;
+  unsubscribe();
+  resetLogin();
+  show('login');
+}
+
+sb.auth.onAuthStateChange((_event, session) => {
+  setTimeout(() => (session ? startApp(session.user) : showLogin()), 0);
+});
+
+function subscribe() {
+  if (channel) return;
+  channel = sb.channel('jar')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, refreshSoon)
+    .subscribe();
+}
+
+function unsubscribe() {
+  if (channel) { sb.removeChannel(channel); channel = null; }
+}
+
+function refreshSoon() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(refresh, 150);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && state.user) refresh();
+});
+
+/* ---------- Data ---------- */
+async function refresh() {
+  if (!state.user) return;
+  const [p, o, e] = await Promise.all([
+    sb.from('person_totals').select('*'),
+    sb.from('offences_live').select('*').order('sort'),
+    sb.from('events').select('*').order('created_at', { ascending: false }).limit(40),
+  ]);
+  const err = p.error || o.error || e.error;
+  if (err) return toast(`Couldn’t load the jar: ${err.message}`);
+  state.totals = p.data.sort(byName);
+  state.offences = o.data;
+  state.events = e.data;
+  render();
+}
+
+function render() {
+  const me = state.user.id;
+  const T = state.totals;
+
+  if (T.length !== 2) {
+    $('#balance').textContent = 'Setup isn’t finished';
+    $('#offences').innerHTML = '<p class="note">This account can’t see the jar yet. Check both people are in the profiles table in Supabase.</p>';
+    $('#settle').hidden = true;
+    $('#history').innerHTML = '';
+    return;
+  }
+
+  const [A, B] = T;
+  const names = { [A.id]: A.name, [B.id]: B.name };
+  const side = (id) => (id === A.id ? 'a' : 'b');
+  const net = round2(Number(A.owes) - Number(B.owes)); // > 0 means A owes B
+  const amt = Math.abs(net);
+  const debtor = net > 0 ? A : B;
+  const creditor = net > 0 ? B : A;
+  state.balance = amt ? { debtor, creditor, amt } : null;
+
+  let line;
+  if (!amt) line = 'All square';
+  else if (debtor.id === me) line = `You owe ${creditor.name} ${money(amt)}`;
+  else if (creditor.id === me) line = `${debtor.name} owes you ${money(amt)}`;
+  else line = `${debtor.name} owes ${creditor.name} ${money(amt)}`;
+  $('#balance').textContent = line;
+
+  // Coin gets pulled towards whoever is owed
+  const pull = amt ? Math.sign(net) * 42 * (amt / (amt + 3)) : 0;
+  $('#coin').style.left = `${50 + pull}%`;
+  $('#end-a').textContent = A.name + (A.id === me ? ' (you)' : '');
+  $('#end-b').textContent = B.name + (B.id === me ? ' (you)' : '');
+  $('#me').textContent = `Signed in as ${names[me] || ''}`;
+
+  const active = state.offences.filter((o) => o.active);
+  $('#offences').innerHTML = active.length
+    ? active.map((o) => `
+        <button class="offence ${side(o.offender_id)}" data-id="${o.id}">
+          <span class="what">${esc(names[o.offender_id] || '')} ${esc(o.label)}</span>
+          <span class="price">${money(o.amount)} each</span>
+          <span class="count"><b>${o.round_count}</b>this round</span>
+        </button>`).join('')
+    : '<p class="note">No offences set up yet. Add one in the offences table in Supabase.</p>';
+
+  const settle = $('#settle');
+  settle.hidden = !amt;
+  if (amt) settle.textContent = `Settle up: ${debtor.name} pays ${money(amt)}`;
+
+  $('#history').innerHTML = state.events.length
+    ? state.events.map((ev) => {
+        const who = names[ev.person_id] || 'Someone';
+        const by = ev.logged_by === me ? 'you' : (names[ev.logged_by] || 'someone');
+        let text, dot, amtHtml = '<span></span>';
+        if (ev.kind === 'offence') {
+          const off = state.offences.find((o) => o.id === ev.offence_id);
+          text = `${who} ${off ? off.label : 'got fined'}`;
+          dot = side(ev.person_id);
+          amtHtml = `<span class="amt ${dot}">+${money(ev.amount)}</span>`;
+        } else {
+          const other = ev.person_id === A.id ? B.name : A.name;
+          text = `${who} paid ${other} ${money(ev.amount)}`;
+          dot = 'settle';
+        }
+        const del = ev.logged_by === me
+          ? `<button class="del" data-id="${ev.id}" aria-label="Delete this entry">×</button>`
+          : '<span></span>';
+        return `<li><span class="dot ${dot}"></span><span><span class="text">${esc(text)}</span><span class="meta">${esc(when(ev.created_at))}, logged by ${esc(by)}</span></span>${amtHtml}${del}</li>`;
+      }).join('')
+    : '<li class="empty">Nothing logged yet. Tap a button above when someone slips up.</li>';
+}
+
+/* ---------- Actions ---------- */
+$('#offences').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.offence');
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  btn.disabled = true;
+  if (navigator.vibrate) navigator.vibrate(15);
+  const { data, error } = await sb.from('events').insert({ kind: 'offence', offence_id: id }).select().single();
+  btn.disabled = false;
+  if (error) return toast(`Couldn’t log that: ${error.message}`);
+  const off = state.offences.find((o) => o.id === id);
+  const who = (state.totals.find((t) => t.id === off?.offender_id) || {}).name || '';
+  toast(`Logged: ${who} ${off ? off.label : ''}`, data.id);
+  refresh();
+});
+
+$('#toast-undo').addEventListener('click', async () => {
+  const id = $('#toast-undo').dataset.id;
+  $('#toast').classList.remove('show');
+  if (!id) return;
+  const { error } = await sb.from('events').delete().eq('id', id);
+  if (error) return toast(`Couldn’t undo: ${error.message}`);
+  refresh();
+});
+
+$('#history').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.del');
+  if (!btn || !confirm('Delete this entry?')) return;
+  const { error } = await sb.from('events').delete().eq('id', btn.dataset.id);
+  if (error) return toast(`Couldn’t delete: ${error.message}`);
+  toast('Entry deleted');
+  refresh();
+});
+
+$('#settle').addEventListener('click', async () => {
+  const b = state.balance;
+  if (!b) return;
+  if (!confirm(`Confirm ${b.debtor.name} has paid ${b.creditor.name} ${money(b.amt)}? The balance goes back to zero.`)) return;
+  const { error } = await sb.from('events').insert({ kind: 'settle', person_id: b.debtor.id, amount: b.amt });
+  if (error) return toast(`Couldn’t settle up: ${error.message}`);
+  toast('Settled. All square.');
+  refresh();
+});
+
+$('#sign-out').addEventListener('click', () => sb.auth.signOut());
+
+/* ---------- Change PIN ---------- */
+$('#change-pin').addEventListener('click', () => {
+  $('#new-pin').value = '';
+  $('#new-pin-2').value = '';
+  $('#pin-change-error').textContent = '';
+  $('#pin-dialog').showModal();
+});
+
+$('#pin-cancel').addEventListener('click', () => $('#pin-dialog').close());
+
+$('#pin-save').addEventListener('click', async () => {
+  const a = $('#new-pin').value.trim();
+  const b = $('#new-pin-2').value.trim();
+  const errEl = $('#pin-change-error');
+  if (!new RegExp(`^\\d{${PIN_LENGTH}}$`).test(a)) return (errEl.textContent = `Use exactly ${PIN_LENGTH} digits.`);
+  if (a !== b) return (errEl.textContent = 'Those PINs don’t match.');
+  errEl.textContent = 'Saving…';
+  const { error } = await sb.auth.updateUser({ password: a });
+  if (error) return (errEl.textContent = error.message);
+  $('#pin-dialog').close();
+  toast('PIN changed');
+});
+
+renderWho();
+drawDots();
+</script>
+</body>
+</html>
